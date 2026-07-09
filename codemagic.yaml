@@ -49,7 +49,9 @@ workflows:
           PROFILE_UUID="$(/usr/libexec/PlistBuddy -c 'Print :UUID' /tmp/profile.plist)"
           echo "Using provisioning profile: $PROFILE_NAME ($PROFILE_UUID)"
           echo "export IOS_PROFILE_UUID=$PROFILE_UUID" > /tmp/ios_profile.env
+          echo "export IOS_PROFILE_NAME=\"$PROFILE_NAME\"" >> /tmp/ios_profile.env
           echo "IOS_PROFILE_UUID=$PROFILE_UUID" >> "$CM_ENV"
+          echo "IOS_PROFILE_NAME=$PROFILE_NAME" >> "$CM_ENV"
           keychain add-certificates
           xcode-project use-profiles \
             --project "$XCODE_PROJECT" \
@@ -71,11 +73,12 @@ workflows:
             echo "IOS_PROFILE_UUID is empty; provisioning profile was not exported from Configure signing"
             exit 1
           fi
+          echo "Building with provisioning profile: $IOS_PROFILE_NAME ($IOS_PROFILE_UUID)"
           xcode-project build-ipa \
             --workspace "$XCODE_WORKSPACE" \
             --scheme "$XCODE_SCHEME" \
             --export-options-plist "$HOME/export_options.plist" \
-            --archive-xcargs "DEVELOPMENT_TEAM=$APPLE_TEAM_ID CODE_SIGN_STYLE=Manual PROVISIONING_PROFILE=$IOS_PROFILE_UUID PROVISIONING_PROFILE_SPECIFIER=$IOS_PROFILE_UUID"
+            --archive-xcargs "DEVELOPMENT_TEAM=$APPLE_TEAM_ID"
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
