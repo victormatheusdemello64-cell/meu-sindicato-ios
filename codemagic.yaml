@@ -27,10 +27,30 @@ workflows:
       - name: Configure signing
         script: |
           keychain initialize
-          app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create --delete-stale-profiles
+          PROFILES_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+          CERTIFICATES_DIR="$HOME/Library/MobileDevice/Certificates"
+          mkdir -p "$PROFILES_DIR" "$CERTIFICATES_DIR"
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --create \
+            --delete-stale-profiles \
+            --profiles-dir "$PROFILES_DIR" \
+            --certificates-dir "$CERTIFICATES_DIR"
+          PROFILE_PATH="$(find "$PROFILES_DIR" -name "*.mobileprovision" -print -quit)"
+          if [ -z "$PROFILE_PATH" ]; then
+            echo "No App Store provisioning profile was found for $BUNDLE_ID"
+            exit 1
+          fi
+          security cms -D -i "$PROFILE_PATH" > /tmp/profile.plist
+          PROFILE_NAME="$(/usr/libexec/PlistBuddy -c 'Print :Name' /tmp/profile.plist)"
+          PROFILE_UUID="$(/usr/libexec/PlistBuddy -c 'Print :UUID' /tmp/profile.plist)"
+          echo "Using provisioning profile: $PROFILE_NAME ($PROFILE_UUID)"
+          echo "export IOS_PROFILE_UUID=$PROFILE_UUID" > /tmp/ios_profile.env
+          echo "IOS_PROFILE_UUID=$PROFILE_UUID" >> "$CM_ENV"
           keychain add-certificates
           xcode-project use-profiles \
             --project "$XCODE_PROJECT" \
+            --profile "$PROFILE_PATH" \
             --archive-method app-store \
             --code-signing-setup-verbose-logging
       - name: Set version and build number
@@ -41,11 +61,18 @@ workflows:
           cd ../..
       - name: Build IPA
         script: |
+          if [ -f /tmp/ios_profile.env ]; then
+            source /tmp/ios_profile.env
+          fi
+          if [ -z "$IOS_PROFILE_UUID" ]; then
+            echo "IOS_PROFILE_UUID is empty; provisioning profile was not exported from Configure signing"
+            exit 1
+          fi
           xcode-project build-ipa \
             --workspace "$XCODE_WORKSPACE" \
             --scheme "$XCODE_SCHEME" \
             --export-options-plist "$HOME/export_options.plist" \
-            --archive-xcargs "DEVELOPMENT_TEAM=$APPLE_TEAM_ID"
+            --archive-xcargs "DEVELOPMENT_TEAM=$APPLE_TEAM_ID CODE_SIGN_STYLE=Manual PROVISIONING_PROFILE=$IOS_PROFILE_UUID PROVISIONING_PROFILE_SPECIFIER=$IOS_PROFILE_UUID"
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
