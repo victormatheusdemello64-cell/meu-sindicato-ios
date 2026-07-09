@@ -1,0 +1,22 @@
+{
+  "name": "meu-sindicato-ios-wrapper",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "cap:add:ios": "cap add ios",
+    "cap:sync:ios": "cap sync ios",
+    "ios:prepare": "npm run build && capacitor-assets generate --ios && cap sync ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "^7.4.3"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^7.4.3",
+    "@capacitor/ios": "^7.4.3",
+    "typescript": "^5.6.3",
+    "vite": "^7.1.9"
+  }
+}
