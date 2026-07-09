@@ -29,11 +29,14 @@ workflows:
           keychain initialize
           PROFILES_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
           CERTIFICATES_DIR="$HOME/Library/MobileDevice/Certificates"
+          CERTIFICATE_PRIVATE_KEY="/tmp/codemagic_apple_distribution.key"
           mkdir -p "$PROFILES_DIR" "$CERTIFICATES_DIR"
+          openssl genrsa -out "$CERTIFICATE_PRIVATE_KEY" 2048
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
             --create \
             --delete-stale-profiles \
+            --certificate-key "@file:$CERTIFICATE_PRIVATE_KEY" \
             --profiles-dir "$PROFILES_DIR" \
             --certificates-dir "$CERTIFICATES_DIR"
           PROFILE_PATH="$(find "$PROFILES_DIR" -name "*.mobileprovision" -print -quit)"
