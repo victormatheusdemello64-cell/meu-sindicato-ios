@@ -13,9 +13,6 @@ workflows:
         XCODE_WORKSPACE: ios/App/App.xcworkspace
         XCODE_SCHEME: App
         APP_VERSION: "1.0"
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: br.com.agenciaallier.meusindicato
     scripts:
       - name: Install dependencies
         script: |
