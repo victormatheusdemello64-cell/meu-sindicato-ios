@@ -3,6 +3,8 @@ workflows:
     name: Meu Sindicato iOS - TestFlight
     max_build_duration: 60
     instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: meu-sindicato-app-store
     environment:
       node: 20
       xcode: latest
