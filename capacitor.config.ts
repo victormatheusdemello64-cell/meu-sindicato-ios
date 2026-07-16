@@ -6,7 +6,7 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   bundledWebRuntime: false,
   server: {
-    url: 'https://meusindicato.app/',
+    url: 'https://meusindicato.app/?build=20260715-ios',
     cleartext: false
   },
   ios: {
@@ -17,4 +17,3 @@ const config: CapacitorConfig = {
 };
 
 export default config;
-
