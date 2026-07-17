@@ -6,6 +6,8 @@ workflows:
     integrations:
       app_store_connect: meu-sindicato-app-store
     environment:
+      groups:
+        - ios-signing
       node: 20
       xcode: latest
       vars:
